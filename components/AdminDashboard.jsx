@@ -26,6 +26,7 @@ export default function AdminDashboard() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [updatingId, setUpdatingId] = useState(null);
   const [mobileMenu, setMobileMenu] = useState(false);
 
   async function fetchLeads(showRefresh = false) {
@@ -59,6 +60,8 @@ export default function AdminDashboard() {
 
   async function updateStatus(id, status) {
     try {
+      setUpdatingId(id);
+
       const response = await fetch(`/api/leads/${id}/status`, {
         method: "PATCH",
         headers: {
@@ -75,14 +78,16 @@ export default function AdminDashboard() {
         currentLeads.map((lead) =>
           lead.id === id
             ? {
-                ...lead,
-                status,
-              }
+              ...lead,
+              status,
+            }
             : lead
         )
       );
     } catch (error) {
       console.error("Status update failed:", error);
+    } finally {
+      setUpdatingId(null);
     }
   }
 
@@ -305,7 +310,8 @@ export default function AdminDashboard() {
               ) : (
                 <LeadTable
                   leads={filteredLeads}
-                  onStatusChange={updateStatus}
+                  updatingId={updatingId}
+                  updateStatus={updateStatus}
                 />
               )}
             </div>
